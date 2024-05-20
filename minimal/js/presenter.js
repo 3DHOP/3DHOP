@@ -1823,6 +1823,9 @@ _drawScene : function () {
 			gl.enable(gl.BLEND);
 			gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
 		}
+		else
+			entityUniforms["uColorID"][3] = 1.0;	// if no transparency, use full alpha, otherwise the entity cancels the background
+
 		//drawing entity
 		renderer.begin();
 			renderer.setTechnique(entitiesTechnique);
@@ -1837,6 +1840,35 @@ _drawScene : function () {
 			renderer.setModel(entity.renderable);
 			renderer.renderModel();
 		renderer.end();
+
+		if(entity.useSeethrough)	// draw seethrough
+		{
+			gl.depthFunc(gl.GREATER);
+			gl.depthMask(false);
+			gl.enable(gl.BLEND);
+			gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+	
+			entityUniforms["uColorID"] = [entity.color[0] * 0.4, entity.color[1] * 0.4, entity.color[2] * 0.4,  entity.color[3] * 0.4];	// seethrough color
+	
+			renderer.begin();
+				renderer.setTechnique(entitiesTechnique);
+				if (entity.type == "lines")
+					renderer.setPrimitiveMode("LINE");
+				else if (entity.type == "points")
+					renderer.setPrimitiveMode("POINT");
+				else if (entity.type == "triangles")
+					renderer.setPrimitiveMode("FILL");
+				renderer.setDefaultGlobals();
+				renderer.setGlobals(entityUniforms);
+				renderer.setModel(entity.renderable);
+				renderer.renderModel();
+			renderer.end();
+	
+			// GLstate cleanup
+			gl.disable(gl.BLEND);
+			gl.depthMask(true);
+			gl.depthFunc(gl.LESS);
+		}
 		
 		if(entity.useTransparency)
 		{
@@ -2977,6 +3009,7 @@ createEntity : function (eName, type, verticesList) {
 	nEntity.transform.matrix = SglMat4.identity();
 	nEntity.color = [1.0, 0.0, 1.0, 1.0];
 	nEntity.useTransparency = false;
+	nEntity.useSeethrough = false;
 	nEntity.pointSize = 6.0;
 	nEntity.zOff = 0.0;
 
