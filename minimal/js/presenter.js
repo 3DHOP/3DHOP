@@ -2666,8 +2666,6 @@ onInitialize : function () {
 	// current cursor XY position normalized [-1 1] on canvas size, and delta
 	this.x	= 0.0;
 	this.y	= 0.0;
-//	this.dx	= 0.0;
-//	this.dy	= 0.0;
 	
 	// scene data
 	this._scene         = null;
@@ -2760,9 +2758,6 @@ onDrag : function (button, x, y, e) {
 
 	// if locked trackball, just return. we check AFTER the light-trackball test
 	if (this._scene.trackball.locked) return;
-
-//	if(ui.dragDeltaX(button) != 0) this.dx += (ui.cursorDeltaX/ui.width);
-//	if(ui.dragDeltaY(button) != 0) this.dy += (ui.cursorDeltaY/ui.height);
 
 	var action = SGL_TRACKBALL_NO_ACTION;
 	if ((ui.isMouseButtonDown(0) && ui.isKeyDown(17)) || ui.isMouseButtonDown(1) || ui.isMouseButtonDown(2)) {
@@ -3973,16 +3968,23 @@ zoomOut: function() {
 // light
 
 rotateLight: function(x, y) {
-	x *= 2;
-	y *= 2;
-	var r = Math.sqrt(x*x + y*y);
+	var dx = x * 2.0;
+	var dy = y * 2.0;
+	var dz = 0.0;
+	var r = Math.sqrt(dx*dx + dy*dy);
 	if(r >= 1) {
-		x /= r;
-		y /= r;
-		r = 0.999;
+		dx /= r;
+		dy /= r;
+		dz = 0.0;
+	} else {
+		dz = Math.sqrt(1 - r*r);
 	}
-	var z = Math.sqrt(1 - r*r);
-	this._lightDirection = [-x, -y, -z];
+	this._lightDirection = [-dx, -dy, -dz];
+	this.repaint();
+},
+
+setLight: function(dir) {
+	this._lightDirection = SglVec3.normalize([-dir[0], -dir[1], -dir[2]]);
 	this.repaint();
 },
 
