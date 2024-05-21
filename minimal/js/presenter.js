@@ -1829,11 +1829,11 @@ _drawScene : function () {
 		//drawing entity
 		renderer.begin();
 			renderer.setTechnique(entitiesTechnique);
-			if (entity.type == "lines")
-				renderer.setPrimitiveMode("LINE");
-			else if (entity.type == "points")
+			if (entity.type == "points")
 				renderer.setPrimitiveMode("POINT");
-			else if (entity.type == "triangles")
+			else if (entity.type == "lines" || entity.type == "lineStrip" || entity.type == "lineLoop")
+				renderer.setPrimitiveMode("LINE");
+			else if (entity.type == "triangles" || entity.type == "triangleStrip" || entity.type == "triangleFan")
 				renderer.setPrimitiveMode("FILL");
 			renderer.setDefaultGlobals();
 			renderer.setGlobals(entityUniforms);
@@ -1852,11 +1852,11 @@ _drawScene : function () {
 	
 			renderer.begin();
 				renderer.setTechnique(entitiesTechnique);
-				if (entity.type == "lines")
-					renderer.setPrimitiveMode("LINE");
-				else if (entity.type == "points")
+				if (entity.type == "points")
 					renderer.setPrimitiveMode("POINT");
-				else if (entity.type == "triangles")
+				else if (entity.type == "lines" || entity.type == "lineStrip" || entity.type == "lineLoop")
+					renderer.setPrimitiveMode("LINE");
+				else if (entity.type == "triangles" || entity.type == "triangleStrip" || entity.type == "triangleFan")
 					renderer.setPrimitiveMode("FILL");
 				renderer.setDefaultGlobals();
 				renderer.setGlobals(entityUniforms);
@@ -3000,7 +3000,7 @@ saveScreenshot : function () {
 
 //------entities-------------------
 createEntity : function (eName, type, verticesList) {
-	// type "points", "lines", "triangles"
+	// type: points, lines, lineStrip, lineLoop, triangles, triangleStrip, triangleFan.
 	var nEntity = {};
 	nEntity.visible = true;
 	nEntity.type = type;
@@ -3014,12 +3014,7 @@ createEntity : function (eName, type, verticesList) {
 	nEntity.zOff = 0.0;
 
 	var modelDescriptor = {};
-	if(type == "points")
-		modelDescriptor.primitives = ["points"];
-	else if(type == "lines")
-		modelDescriptor.primitives = ["lines"];
-	else if(type == "triangles")
-		modelDescriptor.primitives = ["triangles"];	
+	modelDescriptor.primitives = [type];
 	modelDescriptor.vertices = {};
 	modelDescriptor.vertices.position = [];
 	modelDescriptor.vertices.normal = [];
@@ -3041,9 +3036,9 @@ createEntity : function (eName, type, verticesList) {
 	
 	// setting
 	this._scene.entities[eName] = {};
-	this._scene.entities[eName] = nEntity;
-	return this._scene.entities[eName];
+	this._scene.entities[eName] = nEntity;;
 	this.repaint();	
+	return this._scene.entities[eName];
 },
 
 deleteEntity : function (eName) {
